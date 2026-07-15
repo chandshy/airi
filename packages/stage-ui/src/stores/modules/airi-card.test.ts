@@ -1,6 +1,7 @@
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { GLOBAL_ROLEPLAY_SYSTEM_PROMPT } from '../../constants/prompts/global-roleplay'
 import { useSettingsStageModel } from '../settings/stage-model'
 import { useAiriCardStore } from './airi-card'
 
@@ -119,5 +120,20 @@ describe('airi-card store', () => {
       model: 'eleven_multilingual_v2',
       voice_id: 'aria',
     })
+  })
+
+  it('prepends the global roleplay prompt with macros substituted, for every card', () => {
+    const cardStore = useAiriCardStore()
+    cardStore.initialize() // default card 'ReLU'
+
+    const prompt = cardStore.systemPrompt
+
+    // Global prompt leads the assembled system prompt.
+    expect(prompt.startsWith('Write ReLU\'s next reply')).toBe(true)
+    // {{char}} -> active card name, {{user}} -> 'the user'; no macros leak to the model.
+    expect(prompt).not.toContain('{{char}}')
+    expect(prompt).not.toContain('{{user}}')
+    // The raw constant still carries the macros (substitution happens at assembly).
+    expect(GLOBAL_ROLEPLAY_SYSTEM_PROMPT).toContain('{{char}}')
   })
 })

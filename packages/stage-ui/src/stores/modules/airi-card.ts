@@ -10,6 +10,7 @@ import { useI18n } from 'vue-i18n'
 import SystemPromptV2 from '../../constants/prompts/system-v2'
 
 import { DEFAULT_ARTISTRY_WIDGET_SPAWNING_PROMPT } from '../../constants/prompts/character-defaults'
+import { GLOBAL_ROLEPLAY_SYSTEM_PROMPT } from '../../constants/prompts/global-roleplay'
 import { capturePosthogEvent } from '../analytics/posthog'
 import { useSettingsStageModel } from '../settings/stage-model'
 import { useArtistryStore } from './artistry'
@@ -427,14 +428,19 @@ export const useAiriCardStore = defineStore('airi-card', () => {
 
     systemPrompt: computed(() => {
       const card = activeCard.value
-      if (!card)
-        return ''
+
+      // Global roleplay prompt applies to every card and every model. Substitute
+      // the SillyTavern-style macros here because AIRI has no runtime macro pass.
+      const globalPrompt = GLOBAL_ROLEPLAY_SYSTEM_PROMPT
+        .replaceAll('{{char}}', card?.name || 'the character')
+        .replaceAll('{{user}}', 'the user')
 
       const components = [
-        card.systemPrompt,
-        card.description,
-        card.personality,
-        card.extensions?.airi?.modules?.artistry?.widgetInstruction,
+        globalPrompt,
+        card?.systemPrompt,
+        card?.description,
+        card?.personality,
+        card?.extensions?.airi?.modules?.artistry?.widgetInstruction,
       ].filter(Boolean)
 
       return components.join('\n\n')
