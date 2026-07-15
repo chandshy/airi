@@ -485,6 +485,54 @@ describe('createChatOrchestratorRuntime', () => {
     ])
   })
 
+  it('resets the foreground stream when a send fails', async () => {
+    // ROOT CAUSE:
+    //
+    // resetForegroundStream ran only on the success path. A send that threw
+    // mid-stream rethrew without resetting, so the partially streamed assistant
+    // bubble stayed on screen until the next successful send overwrote it.
+    //
+    // Fixed by moving the reset into `finally` so every exit clears it.
+    const harness = createHarness()
+    harness.stream.mockImplementationOnce(async (_m, _p, _msgs, options) => {
+      await options?.onStreamEvent?.({ type: 'text-delta', text: 'half a reply' })
+      throw new Error('provider blew up mid-stream')
+    })
+
+    await expect(harness.runtime.ingest('hello', {
+      model: 'gpt-test',
+      chatProvider: provider,
+    })).rejects.toThrow('provider blew up mid-stream')
+
+    expect(harness.foregroundResets.length).toBeGreaterThan(0)
+  })
+
+  it('persists a reasoning-only assistant turn (output fully inside tags)', async () => {
+    // ROOT CAUSE:
+    //
+    // The finalize guard was `buildingMessage.slices.length > 0`. A response
+    // whose visible text is entirely categorized as reasoning (e.g. wrapped in
+    // <think> tags) produces zero speech slices, so the turn was never appended
+    // to history and vanished on the next reset.
+    //
+    // Fixed by also persisting when fullText / tool_results are present.
+    const harness = createHarness()
+    harness.stream.mockImplementationOnce(async (_m, _p, _msgs, options) => {
+      await options?.onStreamEvent?.({ type: 'text-delta', text: '<think>internal reasoning only</think>' })
+      await options?.onStreamEvent?.({ type: 'finish', finishReason: 'stop' })
+    })
+
+    await harness.runtime.ingest('think it through', {
+      model: 'gpt-test',
+      chatProvider: provider,
+    })
+
+    const appended = harness.sessionMessages['session-1'].filter(m => m.role === 'assistant')
+    expect(appended.length).toBe(1)
+    expect(appended[0].slices?.length ?? 0).toBe(0)
+    expect(harness.assistantAppended.length).toBe(1)
+  })
+
   /**
    * @example
    * Cancelling a queued send rejects only pending work that has not started.

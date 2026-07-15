@@ -791,7 +791,16 @@ export function createChatOrchestratorRuntime(deps: ChatOrchestratorRuntimeDeps)
         latencyMs: Math.round(monotonicNow() - llmRequestStartedAt),
       })
 
-      if (!isStaleGeneration() && buildingMessage.slices.length > 0) {
+      // Persist any turn that produced real output, not just visible text
+      // slices. Reasoning-only responses (thinking models: deepseek-r1, qwen3,
+      // gpt-oss, or output fully inside <think> tags) filter to zero text slices
+      // but still carry reasoning; tool-only turns carry tool_results. Guarding
+      // on slices alone dropped those turns from history and future context.
+      const hasPersistableOutput
+        = buildingMessage.slices.length > 0
+          || buildingMessage.tool_results.length > 0
+          || !!fullText.trim()
+      if (!isStaleGeneration() && hasPersistableOutput) {
         const finalAssistant = buildingMessage
         deps.session.appendSessionMessage(sessionId, finalAssistant)
         deps.onAssistantMessageAppended?.({
@@ -817,7 +826,6 @@ export function createChatOrchestratorRuntime(deps: ChatOrchestratorRuntimeDeps)
         sessionMessages: sessionMessagesForSend,
       })
 
-      resetForegroundStream(sessionId)
       const durationMs = Math.round(monotonicNow() - roundStartedAt)
       deps.onMessageRound?.({
         ...correlation,
@@ -862,6 +870,13 @@ export function createChatOrchestratorRuntime(deps: ChatOrchestratorRuntimeDeps)
       throw error
     }
     finally {
+      // Hand the foreground back to a clean state on every exit, not just
+      // success. Without this, a failed or aborted send leaves the partially
+      // streamed (or empty) assistant bubble stuck on screen until the next
+      // successful send overwrites it. On success this runs after the final
+      // message was appended to history (try body), so the bubble still hands
+      // off to the persisted message rather than vanishing.
+      resetForegroundStream(sessionId)
       setSending(false)
       deps.onSendSettled?.({ sessionId })
     }
