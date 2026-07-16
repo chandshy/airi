@@ -168,9 +168,16 @@ const cursorPosition = computed(() => ({
         <Header class="hidden md:flex" />
         <MobileHeader class="flex md:hidden" />
       </div>
-      <!-- page -->
+      <!-- page: chat-forward — avatar is a companion column, chat is the main column -->
       <div relative flex="~ 1 row gap-y-0 gap-x-2 <md:col">
-        <div relative flex-1 min-w="1/2">
+        <!-- avatar companion: full-width above the chat on mobile, a sized side panel on desktop -->
+        <div
+          relative
+          :class="[
+            'w-full flex-1',
+            'md:max-w-[440px] md:min-w-[240px] md:w-[32%] md:flex-none',
+          ]"
+        >
           <div
             absolute left-0 z-15 px-3
             :class="[
@@ -186,7 +193,7 @@ const cursorPosition = computed(() => ({
             :paused="paused"
           />
         </div>
-        <InteractiveArea v-if="!isMobile" h="85dvh" absolute right-4 flex flex-1 flex-col max-w="500px" min-w="30%" />
+        <InteractiveArea v-if="!isMobile" h="85dvh" class="min-w-0 flex-1" flex flex-col />
         <MobileInteractiveArea v-if="isMobile" @settings-open="handleSettingsOpen" />
       </div>
       <HoloCoupon />

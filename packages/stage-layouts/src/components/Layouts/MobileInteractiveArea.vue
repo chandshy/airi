@@ -7,6 +7,7 @@ import { useThreeViewControl } from '@proj-airi/stage-ui-three'
 import { ChatHistory, HearingConfigDialog } from '@proj-airi/stage-ui/components'
 import { ChatSessionsDrawer } from '@proj-airi/stage-ui/components/scenarios/chat'
 import { useAnalytics, useAudioAnalyzer } from '@proj-airi/stage-ui/composables'
+import { useActiveCharacterPortrait } from '@proj-airi/stage-ui/composables/use-active-character-portrait'
 import { useAudioContext } from '@proj-airi/stage-ui/stores/audio'
 import { useChatOrchestratorStore } from '@proj-airi/stage-ui/stores/chat'
 import { useChatMaintenanceStore } from '@proj-airi/stage-ui/stores/chat/maintenance'
@@ -41,6 +42,7 @@ const { messages } = storeToRefs(chatSession)
 const { streamingMessage } = storeToRefs(chatStream)
 const { sending } = storeToRefs(chatOrchestrator)
 const historyMessages = computed(() => messages.value as unknown as ChatHistoryItem[])
+const { name: characterName, portraitUrl: assistantPortraitUrl } = useActiveCharacterPortrait()
 const { trackChatMessageDeleted, trackChatMessagesCleared } = useAnalytics()
 const { rerunToolCall } = useChatToolCallRerun()
 
@@ -177,6 +179,8 @@ onMounted(() => {
           v-if="!threeViewCtrlEnabled && !l2dViewCtrlEnabled"
           variant="mobile"
           :messages="historyMessages"
+          :assistant-label="characterName"
+          :assistant-portrait-url="assistantPortraitUrl"
           :sending="sending"
           :streaming-message="streamingMessage"
           max-w="[calc(100%-3.5rem)]"

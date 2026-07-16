@@ -24,7 +24,18 @@ import IndicatorMicVolume from './IndicatorMicVolume.vue'
 import { useTranscriptions } from '../../composables/use-transcriptions'
 import { useStopSpeakingButton } from '../../composables/useStopSpeakingButton'
 
+const props = defineProps<{
+  /** Text pushed into the input (e.g. a starter-prompt chip); user edits before sending. */
+  prefill?: string
+}>()
+
 const messageInput = ref<string>('')
+// Fill the input from a starter prompt without auto-sending, so the user can edit first.
+watch(() => props.prefill, (value) => {
+  if (value)
+    messageInput.value = value
+})
+
 const hearingPopoverOpen = ref(false)
 const sessionsDrawerOpen = ref(false)
 const isComposing = ref(false)

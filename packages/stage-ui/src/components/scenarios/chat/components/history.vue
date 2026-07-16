@@ -6,6 +6,7 @@ import { computed, provide, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import ChatAssistantItem from './assistant-item.vue'
+import ChatEmptyState from './ChatEmptyState.vue'
 import ChatErrorItem from './error-item.vue'
 import ChatUserItem from './user-item.vue'
 
@@ -18,6 +19,8 @@ const props = withDefaults(defineProps<{
   streamingMessage?: ChatAssistantMessage & { createdAt?: number }
   sending?: boolean
   assistantLabel?: string
+  /** Character portrait URL for assistant avatars + empty state (host supplies it; falls back to a monogram). */
+  assistantPortraitUrl?: string
   userLabel?: string
   errorLabel?: string
   retryLabel?: string
@@ -34,6 +37,7 @@ const emit = defineEmits<{
   (e: 'deleteMessage', payload: { message: ChatHistoryItem, index: number, key: string | number }): void
   (e: 'retryMessage', payload: { message: ChatHistoryItem, index: number, key: string | number }): void
   (e: 'toolCallRerun', payload: { message: ChatHistoryItem, index: number, key: string | number, toolCallId: string, toolName: string, args: string }): void
+  (e: 'selectPrompt', text: string): void
 }>()
 
 const chatHistoryRef = ref<HTMLDivElement>()
@@ -71,6 +75,18 @@ const renderMessages = computed<ChatHistoryItem[]>(() => {
 
   return [...props.messages, streaming.value]
 })
+
+// Empty state shows only when there are no user/assistant/error turns; the
+// session's leading system message (never rendered) does not count as content.
+const hasVisibleMessages = computed(() =>
+  renderMessages.value.some(message => message.role === 'user' || message.role === 'assistant' || message.role === 'error'),
+)
+
+// First message of a same-sender run: drives the avatar + name/time header.
+function isGroupStart(index: number): boolean {
+  const previous = renderMessages.value[index - 1]
+  return !previous || previous.role !== renderMessages.value[index]?.role
+}
 
 useChatHistoryScroll({
   containerRef: chatHistoryRef,
@@ -117,12 +133,19 @@ function emitToolCallRerun(
 </script>
 
 <template>
-  <div ref="chatHistoryRef" v-auto-animate flex="~ col" relative h-full w-full overflow-y-auto rounded-xl px="<sm:2" py="<sm:2" :class="variant === 'mobile' ? 'gap-1' : 'gap-2'">
-    <template v-for="(message, index) in renderMessages" :key="getChatHistoryItemKey(message, index)">
+  <div ref="chatHistoryRef" v-auto-animate flex="~ col" relative h-full w-full overflow-y-auto rounded-xl px="4 <sm:2" py="<sm:2" :class="variant === 'mobile' ? 'gap-1' : 'gap-2'">
+    <ChatEmptyState
+      v-if="!hasVisibleMessages"
+      :name="labels.assistant"
+      :portrait-url="assistantPortraitUrl"
+      @select-prompt="emit('selectPrompt', $event)"
+    />
+    <template v-for="(message, index) in renderMessages" v-else :key="getChatHistoryItemKey(message, index)">
       <div
         :data-chat-message-index="index"
         :data-chat-message-key="String(getChatHistoryItemKey(message, index))"
         :data-chat-message-role="message.role"
+        :class="isGroupStart(index) ? '' : (variant === 'mobile' ? '-mt-1' : '-mt-1.5')"
       >
         <ChatErrorItem
           v-if="message.role === 'error'"
@@ -140,6 +163,8 @@ function emitToolCallRerun(
           v-else-if="message.role === 'assistant'"
           :message="message"
           :label="labels.assistant"
+          :group-start="isGroupStart(index)"
+          :portrait-url="assistantPortraitUrl"
           :show-placeholder="shouldShowPlaceholder(message) && showStreamingPlaceholder"
           :variant="variant"
           :tool-call-renderers="toolCallRenderers"
@@ -151,6 +176,7 @@ function emitToolCallRerun(
           v-else-if="message.role === 'user'"
           :message="message"
           :label="labels.user"
+          :group-start="isGroupStart(index)"
           :variant="variant"
           @copy="emitCopyMessage(message, index)"
           @delete="emitDeleteMessage(message, index)"

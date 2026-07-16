@@ -2,10 +2,12 @@
 import type { ChatHistoryItem } from '@proj-airi/stage-ui/types/chat'
 
 import { ChatHistory } from '@proj-airi/stage-ui/components'
+import { useActiveCharacterPortrait } from '@proj-airi/stage-ui/composables/use-active-character-portrait'
 import { useAnalytics } from '@proj-airi/stage-ui/composables/use-analytics'
 import { useChatOrchestratorStore } from '@proj-airi/stage-ui/stores/chat'
 import { useChatSessionStore } from '@proj-airi/stage-ui/stores/chat/session-store'
 import { useChatStreamStore } from '@proj-airi/stage-ui/stores/chat/stream-store'
+import { useAiriCardStore } from '@proj-airi/stage-ui/stores/modules/airi-card'
 import { useDeferredMount } from '@proj-airi/ui'
 import { storeToRefs } from 'pinia'
 import { computed, ref } from 'vue'
@@ -20,11 +22,19 @@ const { isReady } = useDeferredMount()
 const { sending } = storeToRefs(useChatOrchestratorStore())
 const { messages } = storeToRefs(useChatSessionStore())
 const { streamingMessage } = storeToRefs(useChatStreamStore())
+const { activeCard } = storeToRefs(useAiriCardStore())
+const { portraitUrl } = useActiveCharacterPortrait()
 
 const isLoading = ref(true)
 const historyMessages = computed(() => messages.value as unknown as ChatHistoryItem[])
 const { trackChatMessageDeleted } = useAnalytics()
 const { rerunToolCall } = useChatToolCallRerun()
+
+// Starter-prompt chips from the empty state prefill the input for editing.
+const inputDraft = ref('')
+function handleSelectPrompt(text: string) {
+  inputDraft.value = text
+}
 
 function handleDeleteMessage(index: number) {
   const message = messages.value[index]
@@ -54,14 +64,17 @@ function handleDeleteMessage(index: number) {
             :messages="historyMessages"
             :sending="sending"
             :streaming-message="streamingMessage"
+            :assistant-label="activeCard?.name?.trim() || undefined"
+            :assistant-portrait-url="portraitUrl"
             h-full
             variant="desktop"
             @delete-message="handleDeleteMessage($event.index)"
             @tool-call-rerun="rerunToolCall"
+            @select-prompt="handleSelectPrompt"
             @vue:mounted="isLoading = false"
           />
         </div>
-        <ChatArea />
+        <ChatArea :prefill="inputDraft" />
       </ChatContainer>
     </div>
   </div>
