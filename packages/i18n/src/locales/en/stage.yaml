@@ -7,6 +7,15 @@ chat:
       core-system: Core System
       you: You
   reasoning: Reasoning
+  typing: Typing…
+  empty:
+    greeting: Hi, I'm {name}
+    subtitle: Say hello or pick a prompt to get started.
+  starters:
+    s1: Introduce yourself
+    s2: What can you do?
+    s3: Tell me something fun
+    s4: How are you feeling?
   sessions:
     title: Conversations
     new: + New

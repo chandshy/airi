@@ -7,6 +7,7 @@ import { useThreeViewControl } from '@proj-airi/stage-ui-three'
 import { ChatHistory, HearingConfigDialog } from '@proj-airi/stage-ui/components'
 import { ChatSessionsDrawer } from '@proj-airi/stage-ui/components/scenarios/chat'
 import { useAnalytics, useAudioAnalyzer } from '@proj-airi/stage-ui/composables'
+import { useActiveCharacterPortrait } from '@proj-airi/stage-ui/composables/use-active-character-portrait'
 import { useAudioContext } from '@proj-airi/stage-ui/stores/audio'
 import { useChatOrchestratorStore } from '@proj-airi/stage-ui/stores/chat'
 import { useChatMaintenanceStore } from '@proj-airi/stage-ui/stores/chat/maintenance'
@@ -41,6 +42,7 @@ const { messages } = storeToRefs(chatSession)
 const { streamingMessage } = storeToRefs(chatStream)
 const { sending } = storeToRefs(chatOrchestrator)
 const historyMessages = computed(() => messages.value as unknown as ChatHistoryItem[])
+const { name: characterName, portraitUrl: assistantPortraitUrl } = useActiveCharacterPortrait()
 const { trackChatMessageDeleted, trackChatMessagesCleared } = useAnalytics()
 const { rerunToolCall } = useChatToolCallRerun()
 
@@ -170,6 +172,14 @@ onMounted(() => {
 
 <template>
   <div fixed bottom-0 w-full flex flex-col>
+    <!--
+      Readability scrim: a translucent backdrop over the avatar behind the chat,
+      fading to transparent upward so the avatar stays visible up top while chat
+      text stays legible over the busy character art below.
+    -->
+    <div
+      class="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[70dvh] from-white/92 via-white/68 to-transparent bg-gradient-to-t dark:from-neutral-900/92 dark:via-neutral-900/65 dark:to-transparent"
+    />
     <BackgroundDialogPicker v-model="backgroundDialogOpen" />
     <KeepAlive>
       <Transition name="fade">
@@ -177,6 +187,8 @@ onMounted(() => {
           v-if="!threeViewCtrlEnabled && !l2dViewCtrlEnabled"
           variant="mobile"
           :messages="historyMessages"
+          :assistant-label="characterName"
+          :assistant-portrait-url="assistantPortraitUrl"
           :sending="sending"
           :streaming-message="streamingMessage"
           max-w="[calc(100%-3.5rem)]"
@@ -190,7 +202,7 @@ onMounted(() => {
         />
       </Transition>
     </KeepAlive>
-    <div relative w-full self-end>
+    <div relative z-20 w-full self-end>
       <div translate-y="[-100%]" absolute left-0 px-3 pb-3 font-sans>
         <div flex="~ col" gap-1>
           <slot name="status" />

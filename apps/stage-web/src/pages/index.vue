@@ -30,7 +30,9 @@ function handleSettingsOpen(open: boolean) {
 }
 
 const breakpoints = useBreakpoints(breakpointsTailwind)
-const isMobile = breakpoints.smaller('md')
+// Below `lg` the two-panel side-by-side gets too cramped, so collapse to the
+// over-avatar chat overlay (the mobile layout) instead of squeezing both panels.
+const isMobile = breakpoints.smaller('lg')
 
 const backgroundStore = useBackgroundStore()
 const { selectedOption, sampledColor } = storeToRefs(backgroundStore)
@@ -162,15 +164,31 @@ const cursorPosition = computed(() => ({
     :background="selectedOption"
     :top-color="sampledColor"
   >
-    <div relative flex="~ col" z-2 h-100dvh w-100vw of-hidden>
+    <!-- Invisible border: inset the whole app (header + avatar + chat + menus) from
+         the screen edges so nothing touches the edge. box-border keeps it 100dvh/vw. -->
+    <div flex="~ col" relative z-2 box-border h-100dvh w-full of-hidden class="p-2 md:p-3">
       <!-- header -->
-      <div class="px-0 py-1 md:px-3 md:py-3" w-full gap-2>
-        <Header class="hidden md:flex" />
-        <MobileHeader class="flex md:hidden" />
+      <div class="py-1 lg:py-2" w-full gap-2>
+        <Header class="hidden lg:flex" />
+        <MobileHeader class="flex lg:hidden" />
       </div>
-      <!-- page -->
-      <div relative flex="~ 1 row gap-y-0 gap-x-2 <md:col">
-        <div relative flex-1 min-w="1/2">
+      <!-- page: chat-forward — avatar is a companion column, chat is the main column.
+           min-h-0 lets this row shrink to its flex height so the avatar canvas fits
+           the viewport instead of overflowing past the bottom. -->
+      <div relative flex="~ 1 row gap-y-0 gap-x-2 <lg:col" class="min-h-0">
+        <!-- avatar companion: full-width when collapsed (chat overlays it), ~40% side
+             panel on wide screens so the chat column is roughly 1.5x the avatar area -->
+        <div
+          relative
+          :class="[
+            'w-full flex-1',
+            // min-h-0 lets the column shrink to the row height instead of being
+            // forced to the canvas's intrinsic height (which overflowed past the
+            // viewport bottom); overflow-hidden clips so the canvas resizes to fit.
+            'min-h-0 overflow-hidden',
+            'lg:max-w-[600px] lg:min-w-[260px] lg:w-[40%] lg:flex-none',
+          ]"
+        >
           <div
             absolute left-0 z-15 px-3
             :class="[
@@ -186,7 +204,7 @@ const cursorPosition = computed(() => ({
             :paused="paused"
           />
         </div>
-        <InteractiveArea v-if="!isMobile" h="85dvh" absolute right-4 flex flex-1 flex-col max-w="500px" min-w="30%" />
+        <InteractiveArea v-if="!isMobile" class="h-full min-w-0 flex-1" flex flex-col />
         <MobileInteractiveArea v-if="isMobile" @settings-open="handleSettingsOpen" />
       </div>
       <HoloCoupon />

@@ -5,6 +5,7 @@ import type { ChatHistoryItem } from '@proj-airi/stage-ui/types/chat'
 import { errorMessageFrom } from '@moeru/std'
 import { useStopSpeakingButton } from '@proj-airi/stage-layouts/composables/useStopSpeakingButton'
 import { ChatHistory, JournalPreviewModal } from '@proj-airi/stage-ui/components'
+import { useActiveCharacterPortrait } from '@proj-airi/stage-ui/composables/use-active-character-portrait'
 import { useAnalytics } from '@proj-airi/stage-ui/composables/use-analytics'
 import { useBackgroundStore } from '@proj-airi/stage-ui/stores/background'
 import { useChatOrchestratorStore } from '@proj-airi/stage-ui/stores/chat'
@@ -204,6 +205,7 @@ watch(sendMode, () => {
 
 const historyMessages = computed(() => messages.value as unknown as ChatHistoryItem[])
 const assistantLabel = computed(() => activeCard.value?.name?.trim() || undefined)
+const { portraitUrl: assistantPortraitUrl } = useActiveCharacterPortrait()
 
 async function handleDeleteMessage(index: number) {
   const message = messages.value[index]
@@ -269,6 +271,7 @@ async function handleCleanupMessages() {
       <ChatHistory
         :messages="historyMessages"
         :assistant-label="assistantLabel"
+        :assistant-portrait-url="assistantPortraitUrl"
         :sending="sending"
         :streaming-message="streamingMessage"
         :tool-call-renderers="toolCallRenderers"

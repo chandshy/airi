@@ -67,6 +67,18 @@ export function getChatHistoryItemCopyText(message: ChatHistoryItem): string {
   return ''
 }
 
+/**
+ * Formats a message timestamp as a short local wall-clock time (e.g. "14:30").
+ * Uses the runtime locale/format via Intl; returns '' when the timestamp is
+ * missing or invalid so callers can omit the label.
+ */
+export function formatMessageTime(createdAt: number | undefined): string {
+  if (createdAt == null || !Number.isFinite(createdAt))
+    return ''
+
+  return new Date(createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+}
+
 export function getChatHistoryItemKey(message: ChatHistoryItem | undefined, index: number): string | number {
   if (!message)
     return index

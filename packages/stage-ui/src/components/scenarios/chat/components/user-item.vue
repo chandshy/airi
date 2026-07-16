@@ -6,14 +6,17 @@ import { computed } from 'vue'
 
 import { MarkdownRenderer } from '../../../markdown'
 import { ChatActionMenu } from '../components/action-menu'
-import { getChatHistoryItemCopyText } from '../utils'
+import { formatMessageTime, getChatHistoryItemCopyText } from '../utils'
 
 const props = withDefaults(defineProps<{
   message: Extract<ChatMessage, { role: 'user' }>
   label: string
   variant?: 'desktop' | 'mobile'
+  /** First message of a same-sender run: renders the name/time header. */
+  groupStart?: boolean
 }>(), {
   variant: 'desktop',
+  groupStart: true,
 })
 
 const emit = defineEmits<{
@@ -39,42 +42,52 @@ const content = computed(() => {
 
 const containerClasses = computed(() => [
   'flex',
-  props.variant === 'mobile' ? 'ml-0 flex-row' : 'ml-12 flex-row-reverse',
+  props.variant === 'mobile' ? 'justify-start' : 'justify-end',
+])
+// Cap bubble width so long text never spans the full panel or hugs the edge.
+const columnClasses = computed(() => [
+  'min-w-0 max-w-[85%]',
+  props.variant === 'mobile' ? 'items-start' : 'items-end',
 ])
 
 const boxClasses = computed(() => [
   props.variant === 'mobile' ? 'px-2 py-2 text-sm bg-neutral-100/90 dark:bg-neutral-800/90' : 'px-3 py-3 bg-neutral-100/80 dark:bg-neutral-800/80',
 ])
+const timestamp = computed(() => formatMessageTime((props.message as { createdAt?: number }).createdAt))
 const copyText = computed(() => getChatHistoryItemCopyText(props.message as ChatHistoryItem))
 </script>
 
 <template>
   <div v-if="message.role === 'user'" :class="containerClasses" class="ph-no-capture">
-    <ChatActionMenu
-      :copy-text="copyText"
-      placement="left"
-      @copy="emit('copy')"
-      @delete="emit('delete')"
-    >
-      <template #default="{ setMeasuredElement }">
-        <div
-          :ref="setMeasuredElement"
-          flex="~ col" shadow="sm neutral-200/50 dark:none"
-          min-w-20 rounded-xl h="unset <sm:fit"
-          :class="[
-            boxClasses,
-            (isStageWeb() || isStageCapacitor()) && props.variant === 'mobile' ? 'select-none sm:select-auto' : '',
-          ]"
-        >
-          <div>
-            <span text-sm text="black/60 dark:white/65" font-normal class="inline <sm:hidden">{{ label }}</span>
+    <div flex="~ col" :class="columnClasses">
+      <div v-if="groupStart" class="mb-1 flex items-baseline gap-2">
+        <span v-if="timestamp" text-xs text="black/35 dark:white/30">{{ timestamp }}</span>
+        <span text-sm text="black/60 dark:white/65" font-normal>{{ label }}</span>
+      </div>
+      <ChatActionMenu
+        :copy-text="copyText"
+        placement="left"
+        @copy="emit('copy')"
+        @delete="emit('delete')"
+      >
+        <template #default="{ setMeasuredElement }">
+          <div
+            :ref="setMeasuredElement"
+            flex="~ col" shadow="sm neutral-200/50 dark:none"
+            min-w-20 h="unset <sm:fit"
+            :class="[
+              'rounded-2xl rounded-br-md',
+              boxClasses,
+              (isStageWeb() || isStageCapacitor()) && props.variant === 'mobile' ? 'select-none sm:select-auto' : '',
+            ]"
+          >
+            <MarkdownRenderer
+              :content="content as string"
+              class="break-words"
+            />
           </div>
-          <MarkdownRenderer
-            :content="content as string"
-            class="break-words"
-          />
-        </div>
-      </template>
-    </ChatActionMenu>
+        </template>
+      </ChatActionMenu>
+    </div>
   </div>
 </template>
