@@ -198,6 +198,19 @@ export function sharedUnoConfig() {
         ],
       },
     },
+    // Standardized chat-panel styling. These name the translucent panel chrome
+    // and the two icon-button variants that were previously copy-pasted across
+    // the desktop (ChatArea/ChatActionButtons) and mobile (MobileInteractiveArea)
+    // layouts. Keeping them here is the single source of truth per AGENTS.md.
+    shortcuts: {
+      // Translucent, blurred panel container (primary-tinted, 4px soft border).
+      'chat-panel': 'flex flex-col rounded-xl border-4 border-solid border-primary-200/20 dark:border-primary-400/20 bg-primary-50/50 dark:bg-primary-950/70 backdrop-blur-md',
+      // Round translucent icon button used in the mobile control stack.
+      'chat-icon-btn': 'flex items-center justify-center rounded-xl border-2 border-solid border-neutral-100/60 dark:border-neutral-800/30 bg-neutral-50/70 dark:bg-neutral-800/70 p-2 text-neutral-500 dark:text-neutral-400 backdrop-blur-md outline-none transition-all duration-200 hover:bg-neutral-100/80 dark:hover:bg-neutral-700/70 active:scale-95 focus-visible:ring-2 focus-visible:ring-primary-400/60',
+      // Compact desktop control button (chat action row + input controls).
+      'chat-ctrl-btn': 'flex items-center justify-center rounded-md p-2 text-lg text-neutral-500 dark:text-neutral-400 outline-none transition-colors transition-transform hover:bg-primary-100/60 hover:text-primary-600 dark:hover:bg-primary-900/40 dark:hover:text-primary-300 active:scale-95 focus-visible:ring-2 focus-visible:ring-primary-400/60',
+    },
+
     rules: [
 
       [/^mask-\[(.*)\]$/, ([, suffix]) => ({ '-webkit-mask-image': suffix.replace(/_/g, ' ') })],
