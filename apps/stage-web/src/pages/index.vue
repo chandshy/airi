@@ -166,7 +166,7 @@ const cursorPosition = computed(() => ({
   >
     <!-- Invisible border: inset the whole app (header + avatar + chat + menus) from
          the screen edges so nothing touches the edge. box-border keeps it 100dvh/vw. -->
-    <div flex="~ col" relative z-2 box-border h-100dvh w-100vw of-hidden class="p-2 md:p-3">
+    <div flex="~ col" relative z-2 box-border h-100dvh w-full of-hidden class="p-2 md:p-3">
       <!-- header -->
       <div class="py-1 lg:py-2" w-full gap-2>
         <Header class="hidden lg:flex" />
