@@ -47,6 +47,7 @@ function handleDeleteMessage(index: number) {
         >
           <div h-full w="1/3" origin-left bg-primary-500 class="animate-scan" />
         </div>
+        <ChatActionButtons />
         <div w="full" max-h="<md:[60%]" py="<sm:2" flex="~ col" rounded="lg" relative h-full flex-1 overflow-hidden px="2 <md:0" py-4>
           <ChatHistory
             v-if="isReady"
@@ -63,8 +64,6 @@ function handleDeleteMessage(index: number) {
         <ChatArea />
       </ChatContainer>
     </div>
-
-    <ChatActionButtons />
   </div>
 </template>
 

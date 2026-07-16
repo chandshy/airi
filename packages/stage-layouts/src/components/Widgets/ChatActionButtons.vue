@@ -5,6 +5,7 @@ import { useChatSessionStore } from '@proj-airi/stage-ui/stores/chat/session-sto
 import { useTheme } from '@proj-airi/ui'
 import { storeToRefs } from 'pinia'
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 import ViewControls from '../Layouts/InteractiveArea/Actions/ViewControls.vue'
 
@@ -14,6 +15,7 @@ const { cleanupMessages } = useChatMaintenanceStore()
 const { messages } = storeToRefs(useChatSessionStore())
 const { trackChatMessagesCleared } = useAnalytics()
 const { isDark, toggleDark } = useTheme()
+const { t } = useI18n()
 
 const backgroundDialogOpen = ref(false)
 
@@ -29,26 +31,22 @@ function handleCleanupMessages() {
 
 <template>
   <BackgroundDialogPicker v-model="backgroundDialogOpen" />
-  <div absolute bottom--8 right-0 flex gap-2>
+  <!-- Global chat controls as a right-aligned header row so they never overlap message content. -->
+  <div :class="['flex justify-end gap-2', 'px-2 pt-2']">
     <ViewControls />
     <button
-      class="max-h-[10lh] min-h-[1lh]"
-      bg="neutral-100 dark:neutral-800"
-      text="lg neutral-500 dark:neutral-400"
-      hover:text="red-500 dark:red-400"
-      flex items-center justify-center rounded-md p-2 outline-none
-      transition-colors transition-transform active:scale-95
+      :class="['chat-icon-btn', 'text-lg', 'hover:text-red-500 dark:hover:text-red-400']"
+      :title="t('stage.controls.cleanup')"
+      :aria-label="t('stage.controls.cleanup')"
       @click="handleCleanupMessages"
     >
       <div class="i-solar:trash-bin-2-bold-duotone" />
     </button>
 
     <button
-      class="max-h-[10lh] min-h-[1lh]"
-      bg="neutral-100 dark:neutral-800"
-      text="lg neutral-500 dark:neutral-400"
-      flex items-center justify-center rounded-md p-2 outline-none
-      transition-colors transition-transform active:scale-95
+      :class="['chat-icon-btn', 'text-lg']"
+      :title="t('stage.controls.theme')"
+      :aria-label="t('stage.controls.theme')"
       @click="() => toggleDark()"
     >
       <Transition name="fade" mode="out-in">
@@ -57,12 +55,9 @@ function handleCleanupMessages() {
       </Transition>
     </button>
     <button
-      class="max-h-[10lh] min-h-[1lh]"
-      bg="neutral-100 dark:neutral-800"
-      text="lg neutral-500 dark:neutral-400"
-      flex items-center justify-center rounded-md p-2 outline-none
-      transition-colors transition-transform active:scale-95
-      title="Background"
+      :class="['chat-icon-btn', 'text-lg']"
+      :title="t('stage.controls.background')"
+      :aria-label="t('stage.controls.background')"
       @click="backgroundDialogOpen = true"
     >
       <div i-solar:gallery-wide-bold-duotone />

@@ -180,26 +180,19 @@ watch(sendMode, () => {
 </script>
 
 <template>
-  <div h="<md:full" flex gap-2 class="ph-no-capture">
-    <div
-      :class="[
-        'relative',
-        'w-full',
-        'bg-primary-200/20 dark:bg-primary-400/20',
-      ]"
-    >
+  <div :class="['<md:h-full', 'flex gap-2', 'ph-no-capture']">
+    <div :class="['relative w-full', 'bg-primary-200/20 dark:bg-primary-400/20']">
       <BasicTextarea
         v-model="messageInput"
         :submit-on-enter="false"
         :placeholder="t('stage.message')"
-        text="primary-600 dark:primary-100  placeholder:primary-500 dark:placeholder:primary-200"
-        bg="transparent"
-        min-h="[100px]" max-h="[300px]" w-full
-        rounded-t-xl p-4 font-medium pb="[60px]"
-        outline-none transition="all duration-250 ease-in-out placeholder:all placeholder:duration-250 placeholder:ease-in-out"
-        :class="{
-          'transition-colors-none placeholder:transition-colors-none': themeColorsHueDynamic,
-        }"
+        :class="[
+          'w-full rounded-t-xl p-4 pb-[60px] font-medium outline-none',
+          'min-h-[100px] max-h-[300px]',
+          'bg-transparent text-primary-600 dark:text-primary-100 placeholder:text-primary-500 dark:placeholder:text-primary-200',
+          'transition-all duration-250 ease-in-out placeholder:transition-all placeholder:duration-250 placeholder:ease-in-out',
+          themeColorsHueDynamic ? 'transition-colors-none placeholder:transition-colors-none' : '',
+        ]"
         @keydown="handleMessageInputKeydown"
         @compositionstart="isComposing = true"
         @compositionend="isComposing = false"
@@ -211,11 +204,9 @@ watch(sendMode, () => {
       >
         <!-- Conversations drawer trigger -->
         <button
-          :class="[
-            'h-8 w-8 flex items-center justify-center rounded-md outline-none transition-all duration-200 active:scale-95',
-            'text-lg text-neutral-500 dark:text-neutral-400',
-          ]"
-          title="Conversations"
+          :class="['chat-ctrl-btn', 'h-8 w-8']"
+          :title="t('stage.controls.conversations')"
+          :aria-label="t('stage.controls.conversations')"
           @click="sessionsDrawerOpen = true"
         >
           <div class="i-solar:chat-line-bold-duotone h-5 w-5" />
@@ -226,11 +217,9 @@ watch(sendMode, () => {
         <DropdownMenuRoot>
           <DropdownMenuTrigger as-child>
             <button
-              :class="[
-                'h-8 w-8 flex items-center justify-center rounded-md outline-none transition-all duration-200 active:scale-95',
-                'text-lg text-neutral-500 dark:text-neutral-400',
-              ]"
+              :class="['chat-ctrl-btn', 'h-8 w-8']"
               :title="t('stage.send-mode.title')"
+              :aria-label="t('stage.send-mode.title')"
             >
               <div class="i-solar:keyboard-bold-duotone h-5 w-5" />
             </button>
@@ -269,12 +258,9 @@ watch(sendMode, () => {
         <PopoverRoot v-model:open="hearingPopoverOpen">
           <PopoverTrigger as-child>
             <button
-              :class="[
-                'h-8 w-8 flex items-center justify-center rounded-md outline-none',
-                'transition-all duration-200 active:scale-95',
-              ]"
-              text="lg neutral-500 dark:neutral-400"
-              :title="t('settings.hearing.title')"
+              :class="['chat-ctrl-btn', 'h-8 w-8']"
+              :title="t('stage.controls.hearing')"
+              :aria-label="t('stage.controls.hearing')"
             >
               <Transition name="fade" mode="out-in">
                 <IndicatorMicVolume v-if="enabled" class="h-5 w-5" :color-class="isListening ? undefined : 'text-neutral-500 dark:text-neutral-400'" />
@@ -302,21 +288,33 @@ watch(sendMode, () => {
       </div>
 
       <div
-        absolute bottom-2 right-2 z-10 flex items-center
+        absolute bottom-2 right-2 z-10 flex items-center gap-2
       >
         <button
           v-if="showStopSpeakingButton"
           data-testid="stop-speaking-button"
-          :class="[
-            'h-8 w-8 flex items-center justify-center rounded-md outline-none',
-            'text-lg text-neutral-500 transition-all duration-200 active:scale-95 dark:text-neutral-400',
-            'hover:bg-primary-100/60 hover:text-primary-600 dark:hover:bg-primary-900/40 dark:hover:text-primary-300',
-          ]"
-          title="Stop speaking"
-          aria-label="Stop speaking"
+          :class="['chat-ctrl-btn', 'h-8 w-8']"
+          :title="t('stage.controls.stop-speaking')"
+          :aria-label="t('stage.controls.stop-speaking')"
           @click="stopSpeakingFromChat"
         >
           <div class="i-solar:stop-circle-bold-duotone h-5 w-5" />
+        </button>
+
+        <!-- Explicit send affordance; keyboard send modes still apply via the textarea. -->
+        <button
+          v-if="messageInput.trim()"
+          data-testid="send-button"
+          :class="[
+            'h-8 w-8 flex items-center justify-center rounded-md outline-none',
+            'bg-primary-500 text-white transition-all duration-200 active:scale-95 hover:bg-primary-600',
+            'focus-visible:ring-2 focus-visible:ring-primary-400/60',
+          ]"
+          :title="t('stage.controls.send')"
+          :aria-label="t('stage.controls.send')"
+          @click="handleSend"
+        >
+          <div class="i-solar:arrow-up-outline h-5 w-5" />
         </button>
       </div>
     </div>

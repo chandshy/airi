@@ -200,13 +200,12 @@ onMounted(() => {
         <div flex="~ col" gap-1>
           <ActionAbout />
           <button
-            border="2 solid neutral-100/60 dark:neutral-800/30"
-            bg="neutral-50/70 dark:neutral-800/70"
-            w-fit flex items-center self-end justify-center rounded-xl p-2 backdrop-blur-md
-            title="Conversations"
+            :class="['chat-icon-btn', 'w-fit self-end']"
+            :title="t('stage.controls.conversations')"
+            :aria-label="t('stage.controls.conversations')"
             @click="sessionsDrawerOpen = true"
           >
-            <div i-solar:chat-line-bold-duotone size-5 text="neutral-500 dark:neutral-400" />
+            <div i-solar:chat-line-bold-duotone size-5 />
           </button>
           <ChatSessionsDrawer v-model="sessionsDrawerOpen" />
           <HearingConfigDialog
@@ -216,43 +215,35 @@ onMounted(() => {
             :granted="true"
           >
             <button
-              border="2 solid neutral-100/60 dark:neutral-800/30"
-              bg="neutral-50/70 dark:neutral-800/70"
-              w-fit flex items-center self-end justify-center rounded-xl p-2 backdrop-blur-md
-              title="Hearing"
+              :class="['chat-icon-btn', 'w-fit self-end']"
+              :title="t('stage.controls.hearing')"
+              :aria-label="t('stage.controls.hearing')"
             >
               <Transition name="fade" mode="out-in">
                 <IndicatorMicVolume v-if="enabled" size-5 :color-class="isListening ? undefined : 'text-neutral-500 dark:text-neutral-400'" />
-                <div v-else i-solar:microphone-3-outline size-5 text="neutral-500 dark:neutral-400" />
+                <div v-else i-solar:microphone-3-outline size-5 />
               </Transition>
             </button>
           </HearingConfigDialog>
-          <button border="2 solid neutral-100/60 dark:neutral-800/30" bg="neutral-50/70 dark:neutral-800/70" w-fit flex items-center self-end justify-center rounded-xl p-2 backdrop-blur-md title="Theme" @click="toggleDark()">
+          <button :class="['chat-icon-btn', 'w-fit self-end']" :title="t('stage.controls.theme')" :aria-label="t('stage.controls.theme')" @click="toggleDark()">
             <Transition name="fade" mode="out-in">
-              <div v-if="isDark" i-solar:moon-outline size-5 text="neutral-500 dark:neutral-400" />
-              <div v-else i-solar:sun-2-outline size-5 text="neutral-500 dark:neutral-400" />
+              <div v-if="isDark" i-solar:moon-outline size-5 />
+              <div v-else i-solar:sun-2-outline size-5 />
             </Transition>
           </button>
-          <button border="2 solid neutral-100/60 dark:neutral-800/30" bg="neutral-50/70 dark:neutral-800/70" w-fit flex items-center self-end justify-center rounded-xl p-2 backdrop-blur-md title="Background" @click="backgroundDialogOpen = true">
-            <div i-solar:gallery-wide-bold-duotone size-5 text="neutral-500 dark:neutral-400" />
+          <button :class="['chat-icon-btn', 'w-fit self-end']" :title="t('stage.controls.background')" :aria-label="t('stage.controls.background')" @click="backgroundDialogOpen = true">
+            <div i-solar:gallery-wide-bold-duotone size-5 />
           </button>
-          <!-- <button border="2 solid neutral-100/60 dark:neutral-800/30" bg="neutral-50/70 dark:neutral-800/70" w-fit flex items-center self-end justify-center rounded-xl p-2 backdrop-blur-md title="Language">
-            <div i-solar:earth-outline size-5 text="neutral-500 dark:neutral-400" />
-          </button> -->
-          <RouterLink to="/settings" border="2 solid neutral-100/60 dark:neutral-800/30" bg="neutral-50/70 dark:neutral-800/70" w-fit flex items-center self-end justify-center rounded-xl p-2 backdrop-blur-md title="Settings">
-            <div i-solar:settings-outline size-5 text="neutral-500 dark:neutral-400" />
+          <RouterLink to="/settings" :class="['chat-icon-btn', 'w-fit self-end']" :title="t('stage.controls.settings')" :aria-label="t('stage.controls.settings')">
+            <div i-solar:settings-outline size-5 />
           </RouterLink>
-          <!-- <button border="2 solid neutral-100/60 dark:neutral-800/30" bg="neutral-50/70 dark:neutral-800/70" w-fit flex items-center self-end justify-center rounded-xl p-2 backdrop-blur-md title="Model">
-            <div i-solar:face-scan-circle-outline size-5 text="neutral-500 dark:neutral-400" />
-          </button> -->
           <button
-            border="2 solid neutral-100/60 dark:neutral-800/30"
-            bg="neutral-50/70 dark:neutral-800/70"
-            w-fit flex items-center self-end justify-center rounded-xl p-2 backdrop-blur-md
-            title="Cleanup Messages"
+            :class="['chat-icon-btn', 'w-fit self-end']"
+            :title="t('stage.controls.cleanup')"
+            :aria-label="t('stage.controls.cleanup')"
             @click="handleCleanupMessages"
           >
-            <div class="i-solar:trash-bin-2-bold-duotone" />
+            <div i-solar:trash-bin-2-bold-duotone size-5 />
           </button>
           <ViewControls />
         </div>
@@ -303,19 +294,6 @@ onMounted(() => {
 </template>
 
 <style scoped>
-@keyframes scan {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(400%);
-  }
-}
-
-.animate-scan {
-  animation: scan 2s infinite linear;
-}
-
 /*
 DO NOT ATTEMPT TO USE backdrop-filter TOGETHER WITH mask-image.
 

@@ -20,6 +20,16 @@ send-mode:
   enter: Enter
   ctrl-enter: Ctrl + Enter
   double-enter: Double Enter
+controls:
+  conversations: Conversations
+  send-mode: Send key
+  hearing: Microphone
+  stop-speaking: Stop speaking
+  send: Send message
+  cleanup: Clear conversation
+  theme: Toggle theme
+  background: Change background
+  settings: Settings
 operations:
   load-models: Load Models
   load-models-status:
