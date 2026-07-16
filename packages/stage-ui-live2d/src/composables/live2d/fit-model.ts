@@ -15,7 +15,7 @@ const startingOffsetY = computed(() => {
   if (isWebLandscape.value)
     return 0.5 // full body centered in the avatar panel
   if (isStageWeb())
-    return 0.75 // portrait web: 3/4
+    return 0.88 // portrait/mobile web: waist-to-head framing with the head fully in view (not clipped)
   return 1 // upper half (desktop pet)
 })
 
