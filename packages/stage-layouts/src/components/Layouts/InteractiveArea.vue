@@ -47,8 +47,8 @@ function handleDeleteMessage(index: number) {
 </script>
 
 <template>
-  <div flex="col" items-center pt-4>
-    <div h-full max-h="[85vh]" w-full py="4">
+  <div flex="~ col" h-full min-h-0 w-full>
+    <div h-full min-h-0 w-full>
       <ChatContainer>
         <div
           v-if="isLoading"
